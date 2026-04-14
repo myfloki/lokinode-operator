@@ -63,9 +63,9 @@ if [ ! -f .env ]; then
     cp .env.sample .env
 fi
 
-if [ ! -f data/flnd/lnd.conf ]; then
-    echo "📄 Creating data/flnd/lnd.conf from sample..."
-    cp data/flnd/lnd.conf.sample data/flnd/lnd.conf
+if [ ! -f data/flnd/flnd.conf ]; then
+    echo "📄 Creating data/flnd/flnd.conf from sample..."
+    cp data/flnd/flnd.conf.sample data/flnd/flnd.conf
 fi
 
 # Load variables
@@ -89,7 +89,7 @@ else
     # Run flnd in background
     docker run -d --name flnd-setup \
         -v "$ABS_DATA_DIR:/root/.flnd" \
-        $IMAGE_NAME flnd --configfile=/root/.flnd/lnd.conf \
+        $IMAGE_NAME flnd --configfile=/root/.flnd/flnd.conf \
         --flokicoin.active --flokicoin.mainnet --flokicoin.node=bitcoind \
         --bitcoind.rpchost=1.2.3.4 --bitcoind.rpcuser=user --bitcoind.rpcpass=pass \
         --bitcoind.zmqpubrawblock=tcp://1.2.3.4:28332 --bitcoind.zmqpubrawtx=tcp://1.2.3.4:28333 > /dev/null
