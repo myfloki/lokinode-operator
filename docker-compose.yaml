@@ -9,7 +9,7 @@ services:
       - "${FLND_REST_PORT:-5050}:5050"
     volumes:
       - ./data/flnd:/root/.flnd
-    command: flnd --configfile=/root/.flnd/lnd.conf
+    command: flnd --configfile=/root/.flnd/flnd.conf
     networks:
       - lokinode_network
     healthcheck:
