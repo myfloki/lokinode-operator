@@ -1,0 +1,6 @@
+.env
+data/flnd/lnd.conf
+data/lokihub/config.json
+data/**
+!data/**/.keep
+!data/**/*.sample
