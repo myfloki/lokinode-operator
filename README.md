@@ -36,6 +36,9 @@ Before starting the services, you can customize your installation:
 - **`.env`**: Modify ports, node aliases, or the docker image version.
 - **`data/flnd/flnd.conf`**: Adjust lightning network settings (e.g., node alias, color, etc.).
 
+> [!CAUTION]
+> **IMPORTANT**: Review your configuration files (e.g., .env, flnd.conf, lokid.conf) and replace any placeholder credentials (like YOUR_RPC_PASSWORD) with secure, custom passwords before starting the services.
+
 ### 4. Start the Operator
 Now that everything is configured and your wallet is ready, start the services:
 
