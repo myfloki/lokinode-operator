@@ -16,7 +16,7 @@ Follow these steps to set up your operator from scratch:
 Run the `setup.sh` script. This script will:
 - Check for and install the `just` command runner if it's missing.
 - Create necessary data directories (`data/flnd`, `data/lokihub`).
-- Generate `.env` and `data/flnd/lnd.conf` from sample files.
+- Generate `.env` and `data/flnd/flnd.conf` from sample files.
 - Start a temporary container to initialize your wallet.
 
 ```bash
@@ -34,7 +34,7 @@ Once the wallet is created, the temporary container will be removed automaticall
 ### 3. Configuration (Optional)
 Before starting the services, you can customize your installation:
 - **`.env`**: Modify ports, node aliases, or the docker image version.
-- **`data/flnd/lnd.conf`**: Adjust lightning network settings (e.g., node alias, color, etc.).
+- **`data/flnd/flnd.conf`**: Adjust lightning network settings (e.g., node alias, color, etc.).
 
 ### 4. Start the Operator
 Now that everything is configured and your wallet is ready, start the services:

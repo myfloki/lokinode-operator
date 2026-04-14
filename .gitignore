@@ -1,5 +1,5 @@
 .env
-data/flnd/lnd.conf
+data/flnd/flnd.conf
 data/lokihub/config.json
 data/**
 !data/**/.keep
