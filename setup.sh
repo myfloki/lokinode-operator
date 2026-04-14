@@ -31,8 +31,18 @@ install_just
 
 # 2. Check for Docker & Compose
 if ! command -v docker &> /dev/null; then
-    echo "❌ Error: Docker is not installed."
-    exit 1
+    echo "🐳 Docker not found. Attempting to install docker-ce-cli..."
+    if command -v apt-get &> /dev/null; then
+        apt-get update && apt-get install -y ca-certificates curl gnupg
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+        echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt-get update && apt-get install -y docker-ce-cli
+    else
+        echo "❌ Error: Docker is not installed and couldn't be automatically installed."
+        exit 1
+    fi
 fi
 
 if docker compose version &> /dev/null; then
@@ -63,16 +73,26 @@ export $(grep -v '^#' .env | xargs)
 IMAGE_NAME=${IMAGE_NAME:-ghcr.io/myfloki/flokicoin:latest}
 
 # 5. Wallet Setup Flow
-if [ -f "data/flnd/data/chain/flokicoin/mainnet/wallet.db" ]; then
+# Note: flnd stores data in /root/.flnd/data/chain/flokicoin/mainnet/
+if [ -f "$(pwd)/data/flnd/data/chain/flokicoin/mainnet/wallet.db" ]; then
     echo "✅ Existing wallet detected. Skipping creation."
 else
     echo "🔐 Setting up FLND Wallet..."
     echo "Starting temporary container for wallet initialization..."
 
+    # Ensure no old container is blocking us
+    docker rm -f flnd-setup &> /dev/null || true
+
+    # Use absolute path for mounting to be safe (especially in nested/socket environments)
+    ABS_DATA_DIR="$(pwd)/data/flnd"
+
     # Run flnd in background
     docker run -d --name flnd-setup \
-        -v $(pwd)/data/flnd:/root/.flnd \
-        $IMAGE_NAME flnd --configfile=/root/.flnd/lnd.conf > /dev/null
+        -v "$ABS_DATA_DIR:/root/.flnd" \
+        $IMAGE_NAME flnd --configfile=/root/.flnd/lnd.conf \
+        --flokicoin.active --flokicoin.mainnet --flokicoin.node=bitcoind \
+        --bitcoind.rpchost=1.2.3.4 --bitcoind.rpcuser=user --bitcoind.rpcpass=pass \
+        --bitcoind.zmqpubrawblock=tcp://1.2.3.4:28332 --bitcoind.zmqpubrawtx=tcp://1.2.3.4:28333 > /dev/null
 
     # Wait for flnd to generate TLS cert and start RPC
     echo "⏳ Waiting for FLND to initialize (this may take a moment)..."
