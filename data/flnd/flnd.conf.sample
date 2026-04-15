@@ -16,7 +16,7 @@
 ; If the part after the equal sign is empty then flnd has no default 
 ; for this option.
 
-[Application Options]
+; [Application Options]
 
 ; The directory that flnd stores all wallet, chain, and channel related data
 ; within The default is ~/.flnd/data on POSIX OSes, $LOCALAPPDATA/Flnd/data on
