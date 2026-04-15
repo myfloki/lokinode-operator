@@ -67,8 +67,8 @@ if [ ! -f data/flnd/flnd.conf ]; then
     echo "📄 Creating data/flnd/flnd.conf from sample..."
     cp data/flnd/flnd.conf.sample data/flnd/flnd.conf
     # Set default values for Flokicoin and Neutrino if they are commented out
-    sed -i 's/; flokicoin.mainnet=true/flokicoin.mainnet=true/' data/flnd/flnd.conf
-    sed -i 's/;   flokicoin.node=neutrino/flokicoin.node=neutrino/' data/flnd/flnd.conf
+    sed -i 's/^[[:space:];]*flokicoin.mainnet=true/flokicoin.mainnet=true/' data/flnd/flnd.conf
+    sed -i 's/^[[:space:];]*flokicoin.node=neutrino/flokicoin.node=neutrino/' data/flnd/flnd.conf
 fi
 
 # 5. Wallet Setup Flow
