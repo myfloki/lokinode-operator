@@ -4,6 +4,12 @@
 
 [Application Options]
 
+; The node alias (max 32 UTF-8 characters).
+alias=myLokinode
+
+; The color of the node in hex format.
+color=#263d37
+
 ; Logging level for all subsystems {trace, debug, info, warn, error, critical}.
 ; Default is 'info'.
 debuglevel=info
@@ -65,16 +71,6 @@ bitcoind.zmqpubrawblock=tcp://1.2.3.4:28332
 bitcoind.zmqpubrawtx=tcp://1.2.3.4:28333
 
 ; ============================================================================
-; Node Identity
-; ============================================================================
-
-; The node alias (max 32 UTF-8 characters).
-nodealias=lokinode-operator
-
-; The color of the node in hex format.
-color=#263d37
-
-; ============================================================================
 ; P2P Network & Connectivity
 ; ============================================================================
 
@@ -99,88 +95,28 @@ restlisten=0.0.0.0:5050
 
 ; --- TLS Options ---
 
-; Adds an extra IP to the generated certificate.
-tlsextraip=0.0.0.0
-; tlsextraip=1.2.3.4
+; File path to write the TLS certificate for RPC connections.
+; tlscertpath=/root/.flnd/tls.cert
 
-; Adds an extra domain to the generated certificate.
-tlsextradomain=localhost
-tlsextradomain=flnd
-
-; Re-generate TLS certificate and key if the IPs or domains are changed.
-tlsautorefresh=true
+; File path to write the TLS private key for RPC connections.
+; tlskeypath=/root/.flnd/tls.key
 
 ; ============================================================================
-; Channel Configuration
+; Channel & Payment Settings
 ; ============================================================================
 
-; The maximum number of incoming pending channels permitted per peer.
-; maxpendingchannels=1
+; The maximum number of active channels.
+; maxpendingchannels=32
 
-; Allow channels larger than 5 FLC (Wumbo).
-; wumbo-channels=false
-
-; The largest channel size (in Loki) that we should accept.
-; maxchansize=500000000
-
-; The smallest channel size (in Loki) that we should accept.
-; minchansize=20000
+; The default number of blocks to wait before a channel can be closed.
+; minchansize=10000
 
 ; ============================================================================
-; Routing & Forwarding Configuration
+; Advanced Options
 ; ============================================================================
 
-; Do not forward any HTLCs (wallet-only mode).
-; rejecthtlc=false
+; Automatically compact the database on startup.
+; db.bolt.auto-compact=true
 
-; The base fee in milli-Loki we will charge for forwarding payments.
-; basefee=1000
-
-; The fee rate used when forwarding payments (in millionths).
-; feerate=100
-
-; The CLTV delta we will subtract from a forwarded HTLC's timelock value.
-; timelockdelta=400
-
-; Accept spontaneous payments through keysend.
-; accept-keysend=false
-
-; Accept spontaneous payments through AMP.
-; accept-amp=false
-
-; ============================================================================
-; Network Graph & Gossip Configuration
-; ============================================================================
-
-; The number of peers that we should receive new graph updates from.
-; numgraphsyncpeers=3
-
-; The polling interval between historical graph sync attempts.
-; historicalsyncinterval=20m
-
-; ============================================================================
-; Watchtower Configuration
-; ============================================================================
-
-; Enable integrated watchtower.
-; watchtower=false
-
-; ============================================================================
-; Protocol Options
-; ============================================================================
-
-; Allow the node to accept and lend out (zero-conf) unconfirmed channels.
-; protocol.option-zeroconf=true
-
-; Allow the node to accept and provide SCID aliases for private channels.
-; protocol.option-scid-alias=true
-
-; ============================================================================
-; Performance & Tuning
-; ============================================================================
-
-; Time in milliseconds between each release of announcements to the network.
-; trickledelay=9000
-
-; The polling interval between attempts to detect channel inactivity.
-; chan-status-sample-interval=1m
+; The maximum size of the database before compaction is triggered.
+; db.bolt.auto-compact-min-age=168h
