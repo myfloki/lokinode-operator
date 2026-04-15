@@ -69,7 +69,7 @@ bitcoind.zmqpubrawtx=tcp://1.2.3.4:28333
 ; ============================================================================
 
 ; The node alias (max 32 UTF-8 characters).
-alias=lokinode-operator
+nodealias=lokinode-operator
 
 ; The color of the node in hex format.
 color=#263d37

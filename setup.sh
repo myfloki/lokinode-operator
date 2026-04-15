@@ -99,12 +99,24 @@ else
     MAX_RETRIES=30
     COUNT=0
     until docker exec flnd-setup ls /root/.flnd/tls.cert &> /dev/null || [ $COUNT -eq $MAX_RETRIES ]; do
+        # Check if the container is still running
+        if [ "$(docker inspect -f '{{.State.Running}}' flnd-setup 2>/dev/null)" != "true" ]; then
+            echo "❌ Error: FLND container stopped unexpectedly!"
+            echo "--- FLND LOGS ---"
+            docker logs flnd-setup
+            echo "----------------"
+            docker rm flnd-setup > /dev/null
+            exit 1
+        fi
         sleep 1
         ((COUNT++))
     done
 
     if [ $COUNT -eq $MAX_RETRIES ]; then
-        echo "❌ Error: FLND failed to start in time. Check logs with 'docker logs flnd-setup'"
+        echo "❌ Error: FLND failed to start in time (Timeout)."
+        echo "--- FLND LOGS ---"
+        docker logs flnd-setup
+        echo "----------------"
         docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null
         exit 1
     fi
