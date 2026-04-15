@@ -1,4 +1,5 @@
 .env
-data/**
-!data/**/.keep
+data/*
+!data/**/
 !data/**/*.sample
+!data/**/.keep
