@@ -1,0 +1,186 @@
+; ============================================================================
+; General Application Options
+; ============================================================================
+
+[Application Options]
+
+; Logging level for all subsystems {trace, debug, info, warn, error, critical}.
+; Default is 'info'.
+debuglevel=info
+
+; Automatically unlock the wallet on startup using defaultpassword.
+; WARNING: This stores your password in plain text in this config file.
+; Use with caution and only in secure environments.
+; autounlock=true
+
+; Use default passphrase for locking.
+; This is required if 'autounlock' is set to true.
+; defaultpassword=your_secure_password
+
+; Maximum number of transactions to display.
+; transactiondisplaylimit=121
+
+; Reset wallet transactions on startup to trigger a full rescan.
+; resetwallettransactions=false
+
+; ============================================================================
+; Chain & On-Chain Configuration
+; ============================================================================
+
+[flokicoin]
+; Use Flokicoin as the active chain.
+flokicoin.active=1
+
+; Use the main network.
+flokicoin.mainnet=1
+
+; The blockchain backend to use {btcd, bitcoind, neutrino, nochainbackend}.
+; Default is 'btcd'.
+flokicoin.node=bitcoind
+
+; Default channel confirmations.
+; flokicoin.defaultchanconfs=3
+
+; Smallest HTLC we will forward (in milli-Loki).
+; flokicoin.minhtlc=1
+
+; ============================================================================
+; Bitcoind Configuration (Flokicoin Backend)
+; ============================================================================
+
+[bitcoind]
+; The host:port for the bitcoind (lokid) RPC server.
+bitcoind.rpchost=1.2.3.4:15211
+
+; The username for bitcoind RPC authentication.
+bitcoind.rpcuser=YOUR_RPC_USER
+
+; The password for bitcoind RPC authentication.
+bitcoind.rpcpass=YOUR_RPC_PASSWORD
+
+; The host:port for the bitcoind ZMQ raw block listener.
+bitcoind.zmqpubrawblock=tcp://1.2.3.4:28332
+
+; The host:port for the bitcoind ZMQ raw transaction listener.
+bitcoind.zmqpubrawtx=tcp://1.2.3.4:28333
+
+; ============================================================================
+; Node Identity
+; ============================================================================
+
+; The node alias (max 32 UTF-8 characters).
+alias=lokinode-operator
+
+; The color of the node in hex format.
+color=#263d37
+
+; ============================================================================
+; P2P Network & Connectivity
+; ============================================================================
+
+; The timeout value for network connections.
+; connectiontimeout=50s
+
+; Add an interface/port to listen for peer connections (incoming).
+listen=0.0.0.0:5521
+
+; External IP to advertise to the network.
+; externalip=1.2.3.4:5521
+
+; ============================================================================
+; RPC & REST API Configuration
+; ============================================================================
+
+; Add an interface/port/socket to listen for RPC connections.
+rpclisten=0.0.0.0:10005
+
+; Add an interface/port/socket to listen for REST connections.
+restlisten=0.0.0.0:5050
+
+; --- TLS Options ---
+
+; Adds an extra IP to the generated certificate.
+tlsextraip=0.0.0.0
+; tlsextraip=1.2.3.4
+
+; Adds an extra domain to the generated certificate.
+tlsextradomain=localhost
+tlsextradomain=flnd
+
+; Re-generate TLS certificate and key if the IPs or domains are changed.
+tlsautorefresh=true
+
+; ============================================================================
+; Channel Configuration
+; ============================================================================
+
+; The maximum number of incoming pending channels permitted per peer.
+; maxpendingchannels=1
+
+; Allow channels larger than 5 FLC (Wumbo).
+; wumbo-channels=false
+
+; The largest channel size (in Loki) that we should accept.
+; maxchansize=500000000
+
+; The smallest channel size (in Loki) that we should accept.
+; minchansize=20000
+
+; ============================================================================
+; Routing & Forwarding Configuration
+; ============================================================================
+
+; Do not forward any HTLCs (wallet-only mode).
+; rejecthtlc=false
+
+; The base fee in milli-Loki we will charge for forwarding payments.
+; basefee=1000
+
+; The fee rate used when forwarding payments (in millionths).
+; feerate=100
+
+; The CLTV delta we will subtract from a forwarded HTLC's timelock value.
+; timelockdelta=400
+
+; Accept spontaneous payments through keysend.
+; accept-keysend=false
+
+; Accept spontaneous payments through AMP.
+; accept-amp=false
+
+; ============================================================================
+; Network Graph & Gossip Configuration
+; ============================================================================
+
+; The number of peers that we should receive new graph updates from.
+; numgraphsyncpeers=3
+
+; The polling interval between historical graph sync attempts.
+; historicalsyncinterval=20m
+
+; ============================================================================
+; Watchtower Configuration
+; ============================================================================
+
+; Enable integrated watchtower.
+; watchtower=false
+
+; ============================================================================
+; Protocol Options
+; ============================================================================
+
+; Allow the node to accept and lend out (zero-conf) unconfirmed channels.
+; protocol.option-zeroconf=true
+
+; Allow the node to accept and provide SCID aliases for private channels.
+; protocol.option-scid-alias=true
+
+; ============================================================================
+; Performance & Tuning
+; ============================================================================
+
+; Time in milliseconds between each release of announcements to the network.
+; trickledelay=9000
+
+; The polling interval between attempts to detect channel inactivity.
+; chan-status-sample-interval=1m
