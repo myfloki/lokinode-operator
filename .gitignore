@@ -3,3 +3,14 @@ data/*
 !data/**/
 !data/**/*.sample
 !data/**/.keep
+# Explicitly ignore peers.json and blockchain data
+**/peers.json
+**/peers.json.sample
+**/*.fdb
+**/*.ldb
+**/*.db
+**/*.bin
+**/*.log
+**/*.cert
+**/*.key
+**/*macaroon
