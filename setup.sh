@@ -66,19 +66,28 @@ fi
 if [ ! -f data/flnd/flnd.conf ]; then
     echo "📄 Creating data/flnd/flnd.conf from sample..."
     cp data/flnd/flnd.conf.sample data/flnd/flnd.conf
+    # Set default values for Flokicoin and Neutrino if they are commented out
+    sed -i 's/; flokicoin.mainnet=true/flokicoin.mainnet=true/' data/flnd/flnd.conf
+    sed -i 's/;   flokicoin.node=neutrino/flokicoin.node=neutrino/' data/flnd/flnd.conf
+fi
+
+# 5. Wallet Setup Flow
+if [ ! -f "data/flnd/data/chain/flokicoin/mainnet/wallet.db" ]; then
+    if [ -f "./bin/just" ]; then
+        ./bin/just setup-wallet
+    else
+        just setup-wallet
+    fi
+else
+    echo "✅ Existing wallet detected."
 fi
 
 echo ""
-echo "🎉 Basic setup finished successfully!"
-echo "------------------------------------------------------------------------"
-echo "NEXT STEPS:"
-echo "1. Edit data/flnd/flnd.conf to configure your chain backend (e.g. flokicoind or neutrino)."
-echo "2. run 'just setup-wallet' to initialize your FLND wallet."
-echo "3. run 'just up' to start the services."
+echo "🎉 Setup finished successfully!"
 echo "------------------------------------------------------------------------"
 if [[ ":$PATH:" != *":$(pwd)/bin:"* ]] && [ -f "./bin/just" ]; then
-    echo "👉 Use: ./bin/just setup-wallet"
+    echo "👉 Use: ./bin/just up    (to start services)"
 else
-    echo "👉 Use: just setup-wallet"
+    echo "👉 Use: just up          (to start services)"
 fi
 echo "------------------------------------------------------------------------"

@@ -12,6 +12,10 @@ setup-wallet:
         echo "✅ Existing wallet detected. Skipping creation."; \
     else \
         echo "🔐 Setting up FLND Wallet..."; \
+        if [ -f "data/flnd/flnd.conf" ]; then \
+            sed -i 's/; flokicoin.mainnet=true/flokicoin.mainnet=true/' data/flnd/flnd.conf; \
+            sed -i 's/;   flokicoin.node=neutrino/flokicoin.node=neutrino/' data/flnd/flnd.conf; \
+        fi; \
         ABS_DATA_DIR=$(pwd)/data/flnd; \
         IMAGE_NAME=$(grep "^IMAGE_NAME=" .env | cut -d '=' -f 2 || echo "ghcr.io/myfloki/flokicoin:latest"); \
         docker rm -f flnd-setup &> /dev/null || true; \
