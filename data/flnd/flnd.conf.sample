@@ -746,7 +746,7 @@
 ;   flokicoin.dnsseed=seed2.test.lightning,soa.seed2.test.lightning
 
 
-[Btcd]
+; [Btcd]
 
 ; The base directory that contains the node's data, logs, configuration file,
 ; etc.
@@ -783,7 +783,7 @@
 ; btcd.rawrpccert=
 
 
-[Flokicoind]
+; [Flokicoind]
 
 ; The base directory that contains the node's data, logs, configuration file,
 ; etc.
