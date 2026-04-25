@@ -60,27 +60,27 @@ lock:
 set-public-node:
     @echo "🔍 Detecting public IP..."
     @PUBLIC_IP=$(curl -s https://api.ipify.org || curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
-    if [ -z "$$PUBLIC_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
+    if [ -z "$PUBLIC_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
     echo "✅ Detected Public IP: $PUBLIC_IP" ; \
     read -p "Do you want to use this IP for node announcement? (y/n): " confirm ; \
-    if [ "$$confirm" = "y" ]; then \
-        sed -i "s/^[[:space:];]*externalip=.*/externalip=$$PUBLIC_IP/" data/flnd/flnd.conf ; \
-        sed -i "s/^[[:space:];]*listen=.*/listen=0.0.0.0:5521/" data/flnd/flnd.conf ; \
-        echo "✅ Public IP updated in flnd.conf" ; \
+    if [ "$confirm" = "y" ]; then \
+        SELECTED_IP=$PUBLIC_IP; \
     else \
         read -p "Enter your public IP manually (or leave empty to skip): " manual_ip ; \
-        if [ ! -z "$$manual_ip" ]; then \
-            sed -i "s/^[[:space:];]*externalip=.*/externalip=$$manual_ip/" data/flnd/flnd.conf ; \
-            sed -i "s/^[[:space:];]*listen=.*/listen=0.0.0.0:5521/" data/flnd/flnd.conf ; \
-            echo "✅ Manual IP updated in flnd.conf" ; \
-        fi ; \
+        SELECTED_IP=$manual_ip; \
+    fi ; \
+    if [ ! -z "$SELECTED_IP" ]; then \
+        sed -i "s/^[[:space:];]*externalip=.*/externalip=$SELECTED_IP/" data/flnd/flnd.conf ; \
+        sed -i "s/^[[:space:];]*listen=.*/listen=0.0.0.0:5521/" data/flnd/flnd.conf ; \
+        echo "✅ Public IP updated in flnd.conf to $SELECTED_IP" ; \
     fi ; \
     read -p "Enter an alias for your node (current: lokinode-operator): " alias ; \
-    if [ ! -z "$$alias" ]; then \
-        sed -i "s/^[[:space:];]*alias=.*/alias=$$alias/" data/flnd/flnd.conf ; \
+    if [ ! -z "$alias" ]; then \
+        sed -i "s/^[[:space:];]*alias=.*/alias=$alias/" data/flnd/flnd.conf ; \
         echo "✅ Alias updated in flnd.conf" ; \
     fi ; \
     echo "🚀 Configuration updated. Remember to restart flnd for changes to take effect."
+
 
 # Revert the node to private mode (removes public announcement)
 set-private-node:
