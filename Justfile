@@ -39,7 +39,7 @@ setup-wallet:
             docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
             exit 1; \
         fi; \
-        docker exec -it flnd-setup flncli --network=main create; \
+        docker exec -it flnd-setup flncli --network=mainnet create; \
         echo "✅ Wallet initialized. Cleaning up..."; \
         docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
     fi
