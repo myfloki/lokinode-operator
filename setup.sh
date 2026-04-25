@@ -110,9 +110,4 @@ done
 if [ ! -z "$PUBLIC_IP" ] && [[ ! " $LOCAL_IPS " =~ " $PUBLIC_IP " ]]; then
     echo "   http://$PUBLIC_IP:1610"
 fi
-echo ""
-echo "⚡ FLND (Lightning Daemon) ports available:"
-echo "   P2P: 5521"
-echo "   RPC: 10005"
-echo "   REST: 5050"
 echo "------------------------------------------------------------------------"
