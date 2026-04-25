@@ -82,8 +82,9 @@ else
     echo "✅ Existing wallet detected."
 fi
 
-# Detect Public IP for suggestion
+# Detect IPs for suggestion
 PUBLIC_IP=$(curl -s --max-time 2 https://icanhazip.com || curl -s --max-time 2 https://ifconfig.me || echo "")
+LOCAL_IPS=$(hostname -I 2>/dev/null || echo "")
 
 echo ""
 echo "🎉 Setup finished successfully!"
@@ -101,7 +102,12 @@ echo ""
 echo "🌍 Once started, visit Lokihub at:"
 echo "   http://localhost:1610"
 echo "   http://127.0.0.1:1610"
-if [ ! -z "$PUBLIC_IP" ]; then
+for ip in $LOCAL_IPS; do
+    if [ "$ip" != "127.0.0.1" ]; then
+        echo "   http://$ip:1610"
+    fi
+done
+if [ ! -z "$PUBLIC_IP" ] && [[ ! " $LOCAL_IPS " =~ " $PUBLIC_IP " ]]; then
     echo "   http://$PUBLIC_IP:1610"
 fi
 echo "------------------------------------------------------------------------"
