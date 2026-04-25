@@ -26,6 +26,7 @@ services:
       - "${LOKIHUB_PORT:-1610}:1610"
     volumes:
       - ./data/lokihub:/root/.local/share/lokihub
+      - ./data/flnd:/root/.flnd
     command: lokihub
     depends_on:
       flnd:

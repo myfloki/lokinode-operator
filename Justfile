@@ -8,7 +8,7 @@ setup:
 
 # Initialize the FLND wallet (run after configuring flnd.conf)
 setup-wallet:
-    @if [ -f "data/flnd/data/chain/flokicoin/mainnet/wallet.db" ]; then \
+    @if [ -f "data/flnd/data/chain/flokicoin/main/wallet.db" ]; then \
         echo "✅ Existing wallet detected. Skipping creation."; \
     else \
         echo "🔐 Setting up FLND Wallet..."; \
@@ -39,7 +39,7 @@ setup-wallet:
             docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
             exit 1; \
         fi; \
-        docker exec -it flnd-setup flncli --network=mainnet create; \
+        docker exec -it flnd-setup flncli --network=main create; \
         echo "✅ Wallet initialized. Cleaning up..."; \
         docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
     fi

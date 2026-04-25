@@ -125,7 +125,7 @@
 ; Default:
 ;   adminmacaroonpath=~/.flnd/data/chain/flokicoin/${network}/admin.macaroon
 ; Example:
-;   adminmacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/admin.macaroon
+;   adminmacaroonpath=~/.flnd/data/chain/flokicoin/main/admin.macaroon
 
 ; Path to write the read-only macaroon for flnd's RPC and REST services if it
 ; doesn't exist. This can be set if one wishes to store the read-only macaroon
@@ -135,7 +135,7 @@
 ; Default:
 ;   readonlymacaroonpath=~/.flnd/data/chain/flokicoin/${network}/readonly.macaroon
 ; Example:
-;   readonlymacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/readonly.macaroon
+;   readonlymacaroonpath=~/.flnd/data/chain/flokicoin/main/readonly.macaroon
 
 ; Path to write the invoice macaroon for flnd's RPC and REST services if it
 ; doesn't exist. This can be set if one wishes to store the invoice macaroon in
@@ -145,7 +145,7 @@
 ; Default:
 ;   invoicemacaroonpath=~/.flnd/data/chain/flokicoin/${network}/invoice.macaroon
 ; Example:
-;   invoicemacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/invoice.macaroon
+;   invoicemacaroonpath=~/.flnd/data/chain/flokicoin/main/invoice.macaroon
 
 ; The strategy to use for selecting coins for wallet transactions. Options are
 ; 'largest' and 'random'.
@@ -315,7 +315,7 @@
 ; Default:
 ;   backupfilepath=~/.flnd/data/chain/flokicoin/${network}/channel.backup
 ; Example:
-;   backupfilepath=~/.flnd/data/chain/flokicoin/mainnet/channel.backup
+;   backupfilepath=~/.flnd/data/chain/flokicoin/main/channel.backup
 
 ; When false (default), old channel backups are archived to a designated location.
 ; When true, old backups are simply replaced.
@@ -1267,7 +1267,7 @@
 ; Default:
 ;   signrpc.signermacaroonpath=~/.flnd/data/chain/flokicoin/${network}/signer.macaroon
 ; Example:
-;   signrpc.signermacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/signer.macaroon
+;   signrpc.signermacaroonpath=~/.flnd/data/chain/flokicoin/main/signer.macaroon
 
 
 [walletrpc]
@@ -1276,7 +1276,7 @@
 ; Default:
 ;   walletrpc.walletkitmacaroonpath=~/.flnd/data/chain/flokicoin/${network}/walletkit.macaroon
 ; Example:
-;   walletrpc.walletkitmacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/walletkit.macaroon
+;   walletrpc.walletkitmacaroonpath=~/.flnd/data/chain/flokicoin/main/walletkit.macaroon
 
 
 [chainrpc]
@@ -1285,7 +1285,7 @@
 ; Default:
 ;   chainrpc.notifiermacaroonpath=~/.flnd/data/chain/flokicoin/${network}/chainnotifier.macaroon
 ; Example:
-;   chainrpc.notifiermacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/chainnotifier.macaroon
+;   chainrpc.notifiermacaroonpath=~/.flnd/data/chain/flokicoin/main/chainnotifier.macaroon
 
 
 [routerrpc]
@@ -1311,7 +1311,7 @@
 ; Default:
 ;   routerrpc.routermacaroonpath=~/.flnd/data/chain/flokicoin/${network}/router.macaroon
 ; Example:
-;   routerrpc.routermacaroonpath=~/.flnd/data/chain/flokicoin/mainnet/router.macaroon
+;   routerrpc.routermacaroonpath=~/.flnd/data/chain/flokicoin/main/router.macaroon
 
 ; The (virtual) fixed cost in sats of a failed payment attempt .
 ; routerrpc.attemptcost=100

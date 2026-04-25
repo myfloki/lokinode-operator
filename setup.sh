@@ -72,7 +72,7 @@ if [ ! -f data/flnd/flnd.conf ]; then
 fi
 
 # 5. Wallet Setup Flow
-if [ ! -f "data/flnd/data/chain/flokicoin/mainnet/wallet.db" ]; then
+if [ ! -f "data/flnd/data/chain/flokicoin/main/wallet.db" ]; then
     if [ -f "./bin/just" ]; then
         ./bin/just setup-wallet
     else
