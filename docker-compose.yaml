@@ -7,6 +7,7 @@ services:
       - "${FLND_PORT:-5521}:5521"
       - "${FLND_RPC_PORT:-10005}:10005"
       - "${FLND_REST_PORT:-5050}:5050"
+      - "${LOKIHUB_PORT:-1610}:1610"
     volumes:
       - ./data/flnd:/root/.flnd
     command: flnd --configfile=/root/.flnd/flnd.conf
@@ -22,11 +23,9 @@ services:
     image: ${IMAGE_NAME:-ghcr.io/myfloki/flokicoin:latest}
     container_name: lokihub
     restart: unless-stopped
-    ports:
-      - "${LOKIHUB_PORT:-1610}:1610"
     environment:
       - LN_BACKEND_TYPE=FLND
-      - LND_ADDRESS=flnd:10005
+      - LND_ADDRESS=localhost:10005
       - LND_CERT_FILE=/root/.flnd/tls.cert
       - LND_MACAROON_FILE=/root/.flnd/data/chain/flokicoin/main/admin.macaroon
     volumes:
@@ -36,8 +35,7 @@ services:
     depends_on:
       flnd:
         condition: service_healthy
-    networks:
-      - lokinode_network
+    network_mode: "service:flnd"
 
 networks:
   lokinode_network:
