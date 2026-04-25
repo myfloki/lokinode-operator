@@ -58,16 +58,14 @@ lock:
 
 # Configure the node for public announcement (detects IP and prompts for alias)
 set-public-node:
-    @echo "🔍 Detecting public IP..."
-    @PUBLIC_IP=$(curl -s https://api.ipify.org || curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
-    if [ -z "$PUBLIC_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
-    echo "✅ Detected Public IP: $PUBLIC_IP" ; \
-    read -p "Do you want to use this IP for node announcement? (y/n): " confirm ; \
-    if [ "$confirm" = "y" ]; then \
-        SELECTED_IP=$PUBLIC_IP; \
+    @read -p "Do you want to detect your public IP automatically? (y/n): " auto_detect ; \
+    if [ "$auto_detect" = "y" ]; then \
+        echo "🔍 Detecting public IP..."; \
+        SELECTED_IP=$(curl -s https://api.ipify.org || curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
+        if [ -z "$SELECTED_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
+        echo "✅ Detected Public IP: $SELECTED_IP" ; \
     else \
-        read -p "Enter your public IP manually (or leave empty to skip): " manual_ip ; \
-        SELECTED_IP=$manual_ip; \
+        read -p "Enter your public IP manually: " SELECTED_IP ; \
     fi ; \
     if [ ! -z "$SELECTED_IP" ]; then \
         sed -i "s/^[[:space:];]*externalip=.*/externalip=$SELECTED_IP/" data/flnd/flnd.conf ; \
