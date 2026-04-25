@@ -27,8 +27,6 @@ services:
     volumes:
       - ./data/lokihub:/root/.local/share/lokihub
       - ./data/flnd:/root/.flnd
-    environment:
-      - LND_ADDRESS=flnd:10005
     command: lokihub
     depends_on:
       flnd:
