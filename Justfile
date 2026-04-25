@@ -1,6 +1,6 @@
 set shell := ["bash", "-c"]
 
-DOCKER_COMPOSE := if `docker compose version &> /dev/null` == "0" { "docker compose" } else { "docker-compose" }
+DOCKER_COMPOSE := "docker compose"
 
 # Onboard a new operator (create data folders, initialize configs)
 setup:
