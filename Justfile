@@ -82,6 +82,12 @@ set-public-node:
     fi ; \
     echo "🚀 Configuration updated. Remember to restart flnd for changes to take effect."
 
+# Revert the node to private mode (removes public announcement)
+set-private-node:
+    @sed -i "s/^externalip=/; externalip=/" data/flnd/flnd.conf ; \
+    sed -i "s/^listen=0.0.0.0:5521/; listen=0.0.0.0:5521/" data/flnd/flnd.conf ; \
+    echo "✅ Node reverted to private mode in flnd.conf. Remember to restart flnd."
+
 # Start the operator services
 up:
     {{DOCKER_COMPOSE}} up -d

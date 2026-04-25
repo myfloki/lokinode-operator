@@ -87,11 +87,11 @@ echo "🎉 Setup finished successfully!"
 echo "------------------------------------------------------------------------"
 if [[ ":$PATH:" != *":$(pwd)/bin:"* ]] && [ -f "./bin/just" ]; then
     echo "👉 Use: ./bin/just set-public-node (to announce your node to the network)"
-    echo "👉 Use: ./bin/just unlock          (to unlock your wallet)"
     echo "👉 Use: ./bin/just up              (to start services)"
+    echo "👉 Use: ./bin/just unlock          (to unlock your wallet)"
 else
     echo "👉 Use: just set-public-node       (to announce your node to the network)"
-    echo "👉 Use: just unlock                (to unlock your wallet)"
     echo "👉 Use: just up                    (to start services)"
+    echo "👉 Use: just unlock                (to unlock your wallet)"
 fi
 echo "------------------------------------------------------------------------"
