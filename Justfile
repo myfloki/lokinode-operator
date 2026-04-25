@@ -2,6 +2,10 @@ set shell := ["bash", "-c"]
 
 DOCKER_COMPOSE := "docker compose"
 
+# List available recipes
+default:
+    @just --list
+
 # Onboard a new operator (create data folders, initialize configs)
 setup:
     ./setup.sh
@@ -43,6 +47,14 @@ setup-wallet:
         echo "✅ Wallet initialized. Cleaning up..."; \
         docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
     fi
+
+# Unlock the FLND wallet
+unlock:
+    docker exec -it flnd flncli --network=mainnet unlock
+
+# Lock the FLND wallet
+lock:
+    docker exec -it flnd flncli --network=mainnet lock
 
 # Start the operator services
 up:
