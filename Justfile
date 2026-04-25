@@ -58,12 +58,12 @@ lock:
 
 # Configure the node for public announcement (detects IP and prompts for alias)
 set-public-node:
-    @read -p "Do you want to detect your public IP automatically? (y/n): " auto_detect ; \
-    if [ "$auto_detect" = "y" ]; then \
-        echo "🔍 Detecting public IP..."; \
-        SELECTED_IP=$(curl -s https://api.ipify.org || curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
-        if [ -z "$SELECTED_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
-        echo "✅ Detected Public IP: $SELECTED_IP" ; \
+    @echo "🔍 Detecting public IP..." ; \
+    DETECTED_IP=$(curl -s https://api.ipify.org || curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
+    if [ -z "$DETECTED_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
+    read -p "Detected Public IP: $DETECTED_IP. Use this IP? (y/n): " confirm ; \
+    if [ "$confirm" = "y" ]; then \
+        SELECTED_IP=$DETECTED_IP; \
     else \
         read -p "Enter your public IP manually: " SELECTED_IP ; \
     fi ; \
