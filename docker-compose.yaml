@@ -23,11 +23,6 @@ services:
     image: ${IMAGE_NAME:-ghcr.io/myfloki/flokicoin:latest}
     container_name: lokihub
     restart: unless-stopped
-    environment:
-      - LN_BACKEND_TYPE=FLND
-      - LND_ADDRESS=localhost:10005
-      - LND_CERT_FILE=/root/.flnd/tls.cert
-      - LND_MACAROON_FILE=/root/.flnd/data/chain/flokicoin/main/admin.macaroon
     volumes:
       - ./data/lokihub:/root/.local/share/lokihub
       - ./data/flnd:/root/.flnd
