@@ -82,6 +82,9 @@ else
     echo "✅ Existing wallet detected."
 fi
 
+# Detect Public IP for suggestion
+PUBLIC_IP=$(curl -s --max-time 2 https://icanhazip.com || curl -s --max-time 2 https://ifconfig.me || echo "")
+
 echo ""
 echo "🎉 Setup finished successfully!"
 echo "------------------------------------------------------------------------"
@@ -93,5 +96,12 @@ else
     echo "👉 Use: just set-public-node       (to announce your node to the network)"
     echo "👉 Use: just up                    (to start services)"
     echo "👉 Use: just unlock                (to unlock your wallet)"
+fi
+echo ""
+echo "🌍 Once started, visit Lokihub at:"
+echo "   http://localhost:1610"
+echo "   http://127.0.0.1:1610"
+if [ ! -z "$PUBLIC_IP" ]; then
+    echo "   http://$PUBLIC_IP:1610"
 fi
 echo "------------------------------------------------------------------------"
