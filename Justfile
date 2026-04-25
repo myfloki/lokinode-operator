@@ -59,7 +59,7 @@ lock:
 # Configure the node for public announcement (detects IP and prompts for alias)
 set-public-node:
     @echo "🔍 Detecting public IP..."
-    @PUBLIC_IP=$(curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
+    @PUBLIC_IP=$(curl -s https://api.ipify.org || curl -s https://icanhazip.com || curl -s https://ifconfig.me) ; \
     if [ -z "$$PUBLIC_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
     echo "✅ Detected Public IP: $$PUBLIC_IP" ; \
     read -p "Do you want to use this IP for node announcement? (y/n): " confirm ; \

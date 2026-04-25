@@ -83,7 +83,7 @@ else
 fi
 
 # Detect IPs for suggestion
-PUBLIC_IP=$(curl -s --max-time 2 https://icanhazip.com || curl -s --max-time 2 https://ifconfig.me || echo "")
+PUBLIC_IP=$(curl -s --max-time 2 https://api.ipify.org || curl -s --max-time 2 https://icanhazip.com || curl -s --max-time 2 https://ifconfig.me || echo "")
 LOCAL_IPS=$(hostname -I 2>/dev/null || echo "")
 
 echo ""
