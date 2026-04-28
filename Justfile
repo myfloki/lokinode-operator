@@ -98,6 +98,11 @@ down:
 restart:
     {{DOCKER_COMPOSE}} restart
 
+# Pull the latest images and restart the operator services
+upgrade:
+    {{DOCKER_COMPOSE}} pull
+    {{DOCKER_COMPOSE}} up -d
+
 # View logs for all services
 logs:
     {{DOCKER_COMPOSE}} logs -f
