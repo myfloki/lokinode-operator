@@ -26,9 +26,9 @@ services:
       - "${LOKIHUB_PORT:-1610}:1610"
     environment:
       - LN_BACKEND_TYPE=FLND
-      - LND_ADDRESS=flnd:10005
-      - LND_CERT_FILE=/root/.flnd/tls.cert
-      - LND_MACAROON_FILE=/root/.flnd/data/chain/flokicoin/main/admin.macaroon
+      - FLND_ADDRESS=flnd:10005
+      - FLND_CERT_FILE=/root/.flnd/tls.cert
+      - FLND_MACAROON_FILE=/root/.flnd/data/chain/flokicoin/main/admin.macaroon
     volumes:
       - ./data/lokihub:/root/.local/share/lokihub
       - ./data/flnd:/root/.flnd
