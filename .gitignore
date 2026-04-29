@@ -14,3 +14,4 @@ data/*
 **/*.cert
 **/*.key
 **/*macaroon
+data/flnd/flnd.conf
