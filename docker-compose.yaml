@@ -9,8 +9,7 @@ services:
       - "${FLND_REST_PORT:-5050}:5050"
     volumes:
       - ./data/flnd:/root/.flnd
-      - ./scripts:/scripts
-    entrypoint: /scripts/entrypoint.sh
+    command: flnd --configfile=/root/.flnd/flnd.conf
     networks:
       - lokinode_network
     healthcheck:
