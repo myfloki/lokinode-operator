@@ -102,6 +102,7 @@ restart:
 upgrade:
     {{DOCKER_COMPOSE}} pull
     {{DOCKER_COMPOSE}} up -d
+    @just unlock
 
 # View logs for all services
 logs:
