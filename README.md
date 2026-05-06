@@ -59,6 +59,23 @@ The operator uses `just` for common tasks:
 | `just logs`     | Follow logs for all services.                   |
 | `just logs-flnd`| Follow logs specifically for `flnd`.            |
 | `just status`   | Check the status of the containers.             |
+| `just cli`      | Open a bash shell inside the `flnd` container.  |
+| `just flncli`   | Run `flncli` commands (e.g., `just flncli getinfo`). |
+| `just backup-channels` | Create a timestamped backup of your channels. |
+| `just restore-channels <file>` | Restore channels from a backup file. |
+
+## 💾 Backup & Recovery
+
+### Static Channel Backups (SCB)
+The `backup-channels` command creates a copy of your `channel.backup` file. This is critical for recovering funds if your node's data is lost or corrupted.
+
+> [!IMPORTANT]
+> **How Recovery Works**: Static Channel Backups do **not** restore active channels. Instead, they provide enough information for your node to ask its peers to force-close the channels and send the funds back to your on-chain wallet. Funds will typically be subject to a "lock-time" (CSV delay) before they become spendable in your wallet.
+
+### 🔄 Restore Procedure
+1. Ensure your node is running and the wallet is unlocked (`just up && just unlock`).
+2. Run the restore command: `just restore-channels backups/channel.backup.YYYYMMDD_HHMMSS`.
+3. Monitor the logs: `just logs-flnd` to see the recovery progress.
 
 ## 🔍 Troubleshooting
 

@@ -56,6 +56,57 @@ unlock:
 lock:
     docker exec -it flnd flncli --network=mainnet lock
 
+# Open a bash shell in the flnd container
+cli:
+    docker exec -it flnd bash
+
+# Run flncli commands (e.g., just flncli getinfo)
+flncli *args:
+    docker exec -it flnd flncli --network=mainnet {{args}}
+
+# Backup the Static Channel Backup (SCB) file
+# This file is automatically updated by flnd, but we create a timestamped copy for safety.
+backup-channels:
+    @mkdir -p backups
+    @TIMESTAMP=$(date +%Y%m%d_%H%M%S); \
+    SCB_FILE="data/flnd/data/chain/flokicoin/main/channel.backup"; \
+    if [ -f "$SCB_FILE" ]; then \
+        cp "$SCB_FILE" "backups/channel.backup.$TIMESTAMP"; \
+        echo "✅ Host-side backup created: backups/channel.backup.$TIMESTAMP"; \
+    else \
+        echo "⚠️  Static Channel Backup file not found at $SCB_FILE"; \
+        echo "💡 Note: flnd only creates this file after your first channel is opened."; \
+    fi; \
+    if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd 2>/dev/null)" = "true" ]; then \
+        echo "📦 Requesting backup via flncli..."; \
+        docker exec flnd flncli --network=mainnet exportchanbackup --all --output_file /root/.flnd/data/chain/flokicoin/main/channel.backup.cli; \
+        cp "data/flnd/data/chain/flokicoin/main/channel.backup.cli" "backups/channel.backup.cli.$TIMESTAMP"; \
+        rm "data/flnd/data/chain/flokicoin/main/channel.backup.cli"; \
+        echo "✅ CLI-exported backup created: backups/channel.backup.cli.$TIMESTAMP"; \
+    fi
+
+# Restore the Static Channel Backup (SCB)
+# DANGER: Only use this if you have lost your channel data.
+# This command triggers 'Data Loss Protection' which asks peers to force-close channels.
+restore-channels backup_file:
+    @if [ ! -f "{{backup_file}}" ]; then \
+        echo "❌ Error: Backup file '{{backup_file}}' not found."; \
+        exit 1; \
+    fi; \
+    if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd 2>/dev/null)" != "true" ]; then \
+        echo "❌ Error: flnd service must be running and unlocked to restore via CLI."; \
+        echo "💡 Try: just up && just unlock"; \
+        exit 1; \
+    fi; \
+    ABS_BACKUP=$(realpath {{backup_file}}); \
+    FILE_NAME=$(basename $ABS_BACKUP); \
+    cp "$ABS_BACKUP" "data/flnd/$FILE_NAME"; \
+    echo "🔄 Restoring channels via flncli..."; \
+    docker exec flnd flncli --network=mainnet restorechanbackup --multi_file "/root/.flnd/$FILE_NAME"; \
+    rm "data/flnd/$FILE_NAME"; \
+    echo "✅ Restore command sent to flnd."; \
+    echo "📜 Check logs (just logs-flnd) to see the progress of channel closures and fund recovery."
+
 # Configure the node for public announcement (detects IP and prompts for alias)
 set-public-node:
     @echo "🔍 Detecting public IP..." ; \
