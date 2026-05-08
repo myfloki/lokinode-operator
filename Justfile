@@ -56,49 +56,48 @@ unlock:
 	fi; \
 	STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -oE "LOCKED|RPC_ACTIVE|SERVER_ACTIVE|NON_EXISTENT" | head -n 1 || echo "UNKNOWN"); \
 	if [ "$$STATE" = "LOCKED" ]; then \
-		echo "🔐 Wallet is locked."; \
-		read -s -p "Enter wallet password: " password; echo; \
-		if echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock &> /dev/null; then \
-			echo "✅ Wallet unlocked successfully!"; \
-			if [ ! -f "data/flnd/wallet-password.txt" ]; then \
-				read -p "Do you want to save this password for automatic unlocking next time? (y/n): " save; \
-				if [ "$$save" = "y" ]; then \
-					echo "$$password" > data/flnd/wallet-password.txt; \
-					chmod 600 data/flnd/wallet-password.txt; \
-					if [ -f "data/flnd/flnd.conf" ]; then \
-						if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
-							sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
-						else \
-							echo "" >> data/flnd/flnd.conf; \
-							echo "wallet-unlock-password-file=/root/.flnd/wallet-password.txt" >> data/flnd/flnd.conf; \
-						fi; \
-						echo "✅ Password saved and flnd.conf updated."; \
-						echo "🚀 flnd will automatically unlock on next restart."; \
-					else \
-						echo "⚠️  data/flnd/flnd.conf not found. Password saved but config not updated."; \
-					fi; \
-				fi; \
-			fi; \
-		else \
-			if docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -qE "RPC_ACTIVE|SERVER_ACTIVE"; then \
-				echo "✅ Wallet is already unlocked."; \
-			else \
-				echo "❌ Failed to unlock wallet. Incorrect password?"; \
-				exit 1; \
-			fi; \
-		fi; \
-	elif [ "$$STATE" = "RPC_ACTIVE" ] || [ "$$STATE" = "SERVER_ACTIVE" ]; then \
-		echo "✅ Wallet is already unlocked."; \
-	elif [ "$$STATE" = "NON_EXISTENT" ]; then \
-		echo "❌ Wallet does not exist. Run 'just setup-wallet' first."; \
-		exit 1; \
+	echo "🔐 Wallet is locked."; \
+	read -s -p "Enter wallet password: " password; echo; \
+	if echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock &> /dev/null; then \
+	echo "✅ Wallet unlocked successfully!"; \
+	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
+	read -p "Do you want to save this password for automatic unlocking next time? (y/n): " save; \
+	if [ "$$save" = "y" ]; then \
+	echo "$$password" > data/flnd/wallet-password.txt; \
+	chmod 600 data/flnd/wallet-password.txt; \
+	if [ -f "data/flnd/flnd.conf" ]; then \
+	if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
+	sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
 	else \
-		# Fallback: if we couldn't detect the state, try to unlock interactively only if NOT already active
-		if ! docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -qE "RPC_ACTIVE|SERVER_ACTIVE"; then \
-			docker exec -it flnd flncli --network=mainnet unlock; \
-		else \
-			echo "✅ Wallet is already unlocked."; \
-		fi; \
+	echo "" >> data/flnd/flnd.conf; \
+	echo "wallet-unlock-password-file=/root/.flnd/wallet-password.txt" >> data/flnd/flnd.conf; \
+	fi; \
+	echo "✅ Password saved and flnd.conf updated."; \
+	echo "🚀 flnd will automatically unlock on next restart."; \
+	else \
+	echo "⚠️  data/flnd/flnd.conf not found. Password saved but config not updated."; \
+	fi; \
+	fi; \
+	fi; \
+	else \
+	if docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -qE "RPC_ACTIVE|SERVER_ACTIVE"; then \
+	echo "✅ Wallet is already unlocked."; \
+	else \
+	echo "❌ Failed to unlock wallet. Incorrect password?"; \
+	exit 1; \
+	fi; \
+	fi; \
+	elif [ "$$STATE" = "RPC_ACTIVE" ] || [ "$$STATE" = "SERVER_ACTIVE" ]; then \
+	echo "✅ Wallet is already unlocked."; \
+	elif [ "$$STATE" = "NON_EXISTENT" ]; then \
+	echo "❌ Wallet does not exist. Run 'just setup-wallet' first."; \
+	exit 1; \
+	else \
+	if ! docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -qE "RPC_ACTIVE|SERVER_ACTIVE"; then \
+	docker exec -it flnd flncli --network=mainnet unlock; \
+	else \
+	echo "✅ Wallet is already unlocked."; \
+	fi; \
 	fi
 # Lock the FLND wallet
 lock:
