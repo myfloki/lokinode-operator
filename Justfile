@@ -13,50 +13,55 @@ setup:
 # Initialize the FLND wallet (run after configuring flnd.conf)
 setup-wallet:
 	@if [ -f "data/flnd/data/chain/flokicoin/main/wallet.db" ]; then \
-	echo "✅ Existing wallet detected. Skipping creation."; \
+		echo "✅ Existing wallet detected. Skipping creation."; \
 	else \
-	echo "🔐 Setting up FLND Wallet..."; \
-	if [ -f "data/flnd/flnd.conf" ]; then \
-	sed -i 's/^[[:space:];]*flokicoin.mainnet=true/flokicoin.mainnet=true/' data/flnd/flnd.conf; \
-	sed -i 's/^[[:space:];]*flokicoin.node=neutrino/flokicoin.node=neutrino/' data/flnd/flnd.conf; \
-	fi; \
-	ABS_DATA_DIR=$(pwd)/data/flnd; \
-	IMAGE_NAME=$(grep "^IMAGE_NAME=" .env | cut -d '=' -f 2 || echo "ghcr.io/myfloki/flokicoin:latest"); \
-	docker rm -f flnd-setup &> /dev/null || true; \
-	echo "Starting temporary container..."; \
-	docker run -d --name flnd-setup \
-	-v "$ABS_DATA_DIR:/root/.flnd" \
-	$IMAGE_NAME flnd --configfile=/root/.flnd/flnd.conf; \
-	echo "⏳ Waiting for FLND to initialize..."; \
-	MAX_RETRIES=30; COUNT=0; \
-	until docker exec flnd-setup ls /root/.flnd/tls.cert &> /dev/null || [ $COUNT -eq $MAX_RETRIES ]; do \
-	if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd-setup 2>/dev/null)" != "true" ]; then \
-	echo "❌ Error: FLND container stopped unexpectedly!"; \
-	docker logs flnd-setup; \
-	docker rm flnd-setup > /dev/null; \
-	exit 1; \
-	fi; \
-	sleep 1; ((COUNT++)); \
-	done; \
-	if [ $COUNT -eq $MAX_RETRIES ]; then \
-	echo "❌ Error: Timeout waiting for FLND."; \
-	docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
-	exit 1; \
-	fi; \
-	docker exec -it flnd-setup flncli --network=mainnet create; \
-	echo "✅ Wallet initialized. Cleaning up..."; \
-	docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
+		echo "🔐 Setting up FLND Wallet..."; \
+		if [ -f "data/flnd/flnd.conf" ]; then \
+			sed -i 's/^[[:space:];]*flokicoin.mainnet=true/flokicoin.mainnet=true/' data/flnd/flnd.conf; \
+			sed -i 's/^[[:space:];]*flokicoin.node=neutrino/flokicoin.node=neutrino/' data/flnd/flnd.conf; \
+		fi; \
+		ABS_DATA_DIR=$(pwd)/data/flnd; \
+		IMAGE_NAME=$(grep "^IMAGE_NAME=" .env | cut -d '=' -f 2 || echo "ghcr.io/myfloki/flokicoin:latest"); \
+		docker rm -f flnd-setup &> /dev/null || true; \
+		echo "Starting temporary container..."; \
+		docker run -d --name flnd-setup \
+			-v "$ABS_DATA_DIR:/root/.flnd" \
+			$IMAGE_NAME flnd --configfile=/root/.flnd/flnd.conf; \
+		echo "⏳ Waiting for FLND to initialize..."; \
+		MAX_RETRIES=30; COUNT=0; \
+		until docker exec flnd-setup ls /root/.flnd/tls.cert &> /dev/null || [ $COUNT -eq $MAX_RETRIES ]; do \
+			if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd-setup 2>/dev/null)" != "true" ]; then \
+				echo "❌ Error: FLND container stopped unexpectedly!"; \
+				docker logs flnd-setup; \
+				docker rm flnd-setup > /dev/null; \
+				exit 1; \
+			fi; \
+			sleep 1; ((COUNT++)); \
+		done; \
+		if [ $COUNT -eq $MAX_RETRIES ]; then \
+			echo "❌ Error: Timeout waiting for FLND."; \
+			docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
+			exit 1; \
+		fi; \
+		docker exec -it flnd-setup flncli --network=mainnet create; \
+		echo "✅ Wallet initialized. Cleaning up..."; \
+		docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
 	fi
 
 # Unlock the FLND wallet
 unlock:
 	@if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd 2>/dev/null)" != "true" ]; then \
-	echo "❌ Error: flnd container is not running. Try 'just up' first."; \
-	exit 1; \
+		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
+		exit 1; \
 	fi; \
-	STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -ioE "LOCKED|RPC_ACTIVE|SERVER_ACTIVE|NON_EXISTENT" | head -n 1 | tr '[:lower:]' '[:upper:]' || echo "UNKNOWN"); \
-	if [ "$$STATE" = "LOCKED" ] || [ "$$STATE" = "UNKNOWN" ]; then \
-		if [ "$$STATE" = "LOCKED" ]; then echo "🔐 Wallet is locked."; fi; \
+	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo ""); \
+	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE"; then \
+		echo "✅ Wallet is already unlocked."; \
+	elif echo "$$RAW_STATE" | grep -iq "NON_EXISTENT"; then \
+		echo "❌ Wallet does not exist. Run 'just setup-wallet' first."; \
+		exit 1; \
+	else \
+		if echo "$$RAW_STATE" | grep -iq "LOCKED"; then echo "🔐 Wallet is locked."; fi; \
 		read -s -p "Enter wallet password: " password; echo; \
 		if echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock &> /dev/null; then \
 			echo "✅ Wallet unlocked successfully!"; \
@@ -80,18 +85,13 @@ unlock:
 				fi; \
 			fi; \
 		else \
-			if docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -qE "RPC_ACTIVE|SERVER_ACTIVE"; then \
+			if docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE"; then \
 				echo "✅ Wallet is already unlocked."; \
 			else \
 				echo "❌ Failed to unlock wallet. Incorrect password?"; \
 				exit 1; \
 			fi; \
 		fi; \
-	elif [ "$$STATE" = "RPC_ACTIVE" ] || [ "$$STATE" = "SERVER_ACTIVE" ]; then \
-		echo "✅ Wallet is already unlocked."; \
-	elif [ "$$STATE" = "NON_EXISTENT" ]; then \
-		echo "❌ Wallet does not exist. Run 'just setup-wallet' first."; \
-		exit 1; \
 	fi
 
 # Open a bash shell in the flnd container
@@ -109,18 +109,18 @@ backup-channels:
 	@TIMESTAMP=$(date +%Y%m%d_%H%M%S); \
 	SCB_FILE="data/flnd/data/chain/flokicoin/main/channel.backup"; \
 	if [ -f "$SCB_FILE" ]; then \
-	cp "$SCB_FILE" "backups/channel.backup.$TIMESTAMP"; \
-	echo "✅ Host-side backup created: backups/channel.backup.$TIMESTAMP"; \
+		cp "$SCB_FILE" "backups/channel.backup.$TIMESTAMP"; \
+		echo "✅ Host-side backup created: backups/channel.backup.$TIMESTAMP"; \
 	else \
-	echo "⚠️  Static Channel Backup file not found at $SCB_FILE"; \
-	echo "💡 Note: flnd only creates this file after your first channel is opened."; \
+		echo "⚠️  Static Channel Backup file not found at $SCB_FILE"; \
+		echo "💡 Note: flnd only creates this file after your first channel is opened."; \
 	fi; \
 	if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd 2>/dev/null)" = "true" ]; then \
-	echo "📦 Requesting backup via flncli..."; \
-	docker exec flnd flncli --network=mainnet exportchanbackup --all --output_file /root/.flnd/data/chain/flokicoin/main/channel.backup.cli; \
-	cp "data/flnd/data/chain/flokicoin/main/channel.backup.cli" "backups/channel.backup.cli.$TIMESTAMP"; \
-	rm "data/flnd/data/chain/flokicoin/main/channel.backup.cli"; \
-	echo "✅ CLI-exported backup created: backups/channel.backup.cli.$TIMESTAMP"; \
+		echo "📦 Requesting backup via flncli..."; \
+		docker exec flnd flncli --network=mainnet exportchanbackup --all --output_file /root/.flnd/data/chain/flokicoin/main/channel.backup.cli; \
+		cp "data/flnd/data/chain/flokicoin/main/channel.backup.cli" "backups/channel.backup.cli.$TIMESTAMP"; \
+		rm "data/flnd/data/chain/flokicoin/main/channel.backup.cli"; \
+		echo "✅ CLI-exported backup created: backups/channel.backup.cli.$TIMESTAMP"; \
 	fi
 
 # Restore the Static Channel Backup (SCB)
@@ -128,13 +128,13 @@ backup-channels:
 # This command triggers 'Data Loss Protection' which asks peers to force-close channels.
 restore-channels backup_file:
 	@if [ ! -f "{{backup_file}}" ]; then \
-	echo "❌ Error: Backup file '{{backup_file}}' not found."; \
-	exit 1; \
+		echo "❌ Error: Backup file '{{backup_file}}' not found."; \
+		exit 1; \
 	fi; \
 	if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd 2>/dev/null)" != "true" ]; then \
-	echo "❌ Error: flnd service must be running and unlocked to restore via CLI."; \
-	echo "💡 Try: just up && just unlock"; \
-	exit 1; \
+		echo "❌ Error: flnd service must be running and unlocked to restore via CLI."; \
+		echo "💡 Try: just up && just unlock"; \
+		exit 1; \
 	fi; \
 	ABS_BACKUP=$(realpath {{backup_file}}); \
 	FILE_NAME=$(basename $ABS_BACKUP); \
@@ -152,19 +152,19 @@ set-public-node:
 	if [ -z "$DETECTED_IP" ]; then echo "❌ Error: Could not detect public IP."; exit 1; fi; \
 	read -p "Detected Public IP: $DETECTED_IP. Use this IP? (y/n): " confirm ; \
 	if [ "$confirm" = "y" ]; then \
-	SELECTED_IP=$DETECTED_IP; \
+		SELECTED_IP=$DETECTED_IP; \
 	else \
-	read -p "Enter your public IP manually: " SELECTED_IP ; \
+		read -p "Enter your public IP manually: " SELECTED_IP ; \
 	fi ; \
 	if [ ! -z "$SELECTED_IP" ]; then \
-	sed -i "s/^[[:space:];]*externalip=.*/externalip=$SELECTED_IP/" data/flnd/flnd.conf ; \
-	sed -i "s/^[[:space:];]*listen=.*/listen=0.0.0.0:5521/" data/flnd/flnd.conf ; \
-	echo "✅ Public IP updated in flnd.conf to $SELECTED_IP" ; \
+		sed -i "s/^[[:space:];]*externalip=.*/externalip=$SELECTED_IP/" data/flnd/flnd.conf ; \
+		sed -i "s/^[[:space:];]*listen=.*/listen=0.0.0.0:5521/" data/flnd/flnd.conf ; \
+		echo "✅ Public IP updated in flnd.conf to $SELECTED_IP" ; \
 	fi ; \
 	read -p "Enter an alias for your node (current: lokinode-operator): " alias ; \
 	if [ ! -z "$alias" ]; then \
-	sed -i "s/^[[:space:];]*alias=.*/alias=$alias/" data/flnd/flnd.conf ; \
-	echo "✅ Alias updated in flnd.conf" ; \
+		sed -i "s/^[[:space:];]*alias=.*/alias=$alias/" data/flnd/flnd.conf ; \
+		echo "✅ Alias updated in flnd.conf" ; \
 	fi ; \
 	echo "🚀 Configuration updated. Remember to restart flnd for changes to take effect."
 
