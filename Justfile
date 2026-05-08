@@ -54,7 +54,7 @@ unlock:
         echo "❌ Error: flnd container is not running. Try 'just up' first."; \
         exit 1; \
     fi; \
-    STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null | sed -n 's/.*"state": *"\([^"]*\)".*/\1/p' | tr -d '[:space:]' | tail -n 1 || echo "UNKNOWN"); \
+    STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -o '"state": *"[^"]*"' | cut -d'"' -f4 | tail -n 1 || echo "UNKNOWN"); \
     if [ "$$STATE" = "LOCKED" ]; then \
         echo "🔐 Wallet is locked."; \
         read -s -p "Enter wallet password: " password; echo; \
@@ -80,8 +80,13 @@ unlock:
                 fi; \
             fi; \
         else \
-            echo "❌ Failed to unlock wallet. Incorrect password?"; \
-            exit 1; \
+            # Double check if it was already unlocked to avoid false failure
+            if docker exec flnd flncli --network=mainnet state 2>/dev/null | grep -qE "RPC_ACTIVE|SERVER_ACTIVE"; then \
+                echo "✅ Wallet is already unlocked."; \
+            else \
+                echo "❌ Failed to unlock wallet. Incorrect password?"; \
+                exit 1; \
+            fi; \
         fi; \
     elif [ "$$STATE" = "RPC_ACTIVE" ] || [ "$$STATE" = "SERVER_ACTIVE" ]; then \
         echo "✅ Wallet is already unlocked."; \
