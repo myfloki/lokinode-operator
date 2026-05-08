@@ -99,10 +99,6 @@ unlock:
 	echo "✅ Wallet is already unlocked."; \
 	fi; \
 	fi
-# Lock the FLND wallet
-lock:
-	docker exec -it flnd flncli --network=mainnet lock
-
 # Open a bash shell in the flnd container
 cli:
 	docker exec -it flnd bash
