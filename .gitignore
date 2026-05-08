@@ -15,4 +15,5 @@ data/*
 **/*.key
 **/*macaroon
 data/flnd/flnd.conf
+data/flnd/wallet-password.txt
 backups/
