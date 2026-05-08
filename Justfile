@@ -54,7 +54,7 @@ unlock:
         echo "❌ Error: flnd container is not running. Try 'just up' first."; \
         exit 1; \
     fi; \
-    STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null | grep '"state"' | cut -d '"' -f 4 || echo "UNKNOWN"); \
+    STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null | sed -n 's/.*"state": *"\([^"]*\)".*/\1/p' | tr -d '[:space:]' | tail -n 1 || echo "UNKNOWN"); \
     if [ "$$STATE" = "LOCKED" ]; then \
         echo "🔐 Wallet is locked."; \
         read -s -p "Enter wallet password: " password; echo; \
