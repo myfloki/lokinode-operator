@@ -63,7 +63,7 @@ unlock:
 	read -s -p "Enter wallet password: " password; echo; \
 	if [ -z "$$password" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
 	TMP_OUT="data/flnd/unlock.tmp"; \
-	echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock > "$$TMP_OUT" 2>&1; \
+	echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock --stdin > "$$TMP_OUT" 2>&1; \
 	if grep -iqE "unlocked|already" "$$TMP_OUT"; then \
 		echo "✅ Wallet unlocked successfully!"; \
 		if [ ! -f "data/flnd/wallet-password.txt" ]; then \
