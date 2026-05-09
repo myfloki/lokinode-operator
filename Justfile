@@ -54,14 +54,17 @@ unlock:
 		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
 		exit 1; \
 	fi; \
+	echo "🔍 Checking wallet state..."; \
 	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo ""); \
 	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE"; then \
 		echo "✅ Wallet is already unlocked."; \
 		exit 0; \
 	fi; \
 	read -s -p "Enter wallet password: " password; echo; \
-	UNLOCK_OUT=$(echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock 2>&1 || true); \
-	if echo "$$UNLOCK_OUT" | grep -iq "unlocked"; then \
+	if [ -z "$$password" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
+	TMP_OUT="data/flnd/unlock.tmp"; \
+	echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock > "$$TMP_OUT" 2>&1; \
+	if grep -iqE "unlocked|already" "$$TMP_OUT"; then \
 		echo "✅ Wallet unlocked successfully!"; \
 		if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 			read -p "Do you want to save this password for automatic unlocking next time? (y/n): " save; \
@@ -72,21 +75,17 @@ unlock:
 					if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
 						sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
 					else \
-						echo "" >> data/flnd/flnd.conf; \
 						echo "wallet-unlock-password-file=/root/.flnd/wallet-password.txt" >> data/flnd/flnd.conf; \
 					fi; \
 					echo "✅ Password saved and flnd.conf updated."; \
-					echo "🚀 flnd will automatically unlock on next restart."; \
-				else \
-					echo "⚠️  data/flnd/flnd.conf not found. Password saved but config not updated."; \
 				fi; \
 			fi; \
 		fi; \
-	elif echo "$$UNLOCK_OUT" | grep -iq "already unlocked"; then \
-		echo "✅ Wallet is already unlocked."; \
+		rm -f "$$TMP_OUT"; \
 	else \
-		echo "❌ Unlock failed:"; \
-		echo "$$UNLOCK_OUT" | sed 's/^/  /'; \
+		echo "❌ Unlock failed. Raw output:"; \
+		cat "$$TMP_OUT"; \
+		rm -f "$$TMP_OUT"; \
 		exit 1; \
 	fi
 
