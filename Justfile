@@ -54,8 +54,13 @@ unlock:
 		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
 		exit 1; \
 	fi; \
-	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo "OFFLINE"); \
-	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE|UNLOCKED" || docker exec flnd flncli --network=mainnet getinfo &> /dev/null; then \
+	echo "🔍 Detecting wallet state..."; \
+	if docker exec flnd flncli --network=mainnet getinfo &> /dev/null; then \
+		echo "✅ Wallet is already unlocked."; \
+		exit 0; \
+	fi; \
+	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>&1 || echo "OFFLINE"); \
+	if echo "$$RAW_STATE" | grep -iqE "ACTIVE|UNLOCKED"; then \
 		echo "✅ Wallet is already unlocked."; \
 		exit 0; \
 	fi; \
