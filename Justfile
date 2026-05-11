@@ -60,11 +60,8 @@ unlock:
 	fi; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
-		echo "🔍 Please enter your password (reading directly from terminal)..."; \
-		read -rs MY_PASS < /dev/tty; \
-		if [ -z "$$MY_PASS" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
-		echo "$$MY_PASS" > data/flnd/wallet-password.txt; \
-		chmod 600 data/flnd/wallet-password.txt; \
+		python3 -c 'import getpass, os; p = getpass.getpass("Enter wallet password: "); f = open("data/flnd/wallet-password.txt", "w"); f.write(p); f.close(); os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
+		if [ ! -f "data/flnd/wallet-password.txt" ] || [ ! -s "data/flnd/wallet-password.txt" ]; then echo "❌ Password entry failed or was empty."; rm -f data/flnd/wallet-password.txt; exit 1; fi; \
 		if [ -f "data/flnd/flnd.conf" ]; then \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
 				sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
