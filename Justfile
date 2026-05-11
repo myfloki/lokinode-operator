@@ -61,21 +61,10 @@ unlock:
 	fi; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
-		echo "💡 Your terminal environment may be injecting noisy timestamps."; \
-		echo "💡 We will ask you to enter the password twice to ensure it is captured correctly."; \
-		read -t 0.1 -n 10000 discard || true; \
-		read -s -p "Enter wallet password: " raw1; echo; \
-		read -s -p "Confirm wallet password: " raw2; echo; \
-		pass1=$(echo "$$raw1" | sed 's/^[0-9]\+//'); \
-		pass2=$(echo "$$raw2" | sed 's/^[0-9]\+//'); \
-		if [ "$$pass1" != "$$pass2" ]; then \
-			echo "❌ Passwords do not match!"; \
-			echo "💡 Hint: This is likely due to injected timestamps (e.g., $$(echo "$$pass1" | grep -oE '^[0-9]+' || echo 'none'))."; \
-			echo "💡 Try typing slowly, or create 'data/flnd/wallet-password.txt' manually."; \
-			exit 1; \
-		fi; \
-		if [ -z "$$pass1" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
-		echo "$$pass1" > data/flnd/wallet-password.txt; \
+		echo "🔍 Capturing password via secure terminal helper..."; \
+		PASSWORD=$(python3 -c 'import getpass; print(getpass.getpass("Enter wallet password: "))' 2>/dev/null); \
+		if [ -z "$$PASSWORD" ]; then echo "❌ Password entry failed or was empty."; exit 1; fi; \
+		echo "$$PASSWORD" > data/flnd/wallet-password.txt; \
 		chmod 600 data/flnd/wallet-password.txt; \
 		if [ -f "data/flnd/flnd.conf" ]; then \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
