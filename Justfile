@@ -60,9 +60,10 @@ unlock:
 	fi; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
-		read -s -p "Enter wallet password: " password; echo; \
-		if [ -z "$$password" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
-		echo "$$password" | sed 's/^[0-9]\+//' > data/flnd/wallet-password.txt; \
+		echo "🔍 Please enter your password (reading directly from terminal)..."; \
+		read -rs MY_PASS < /dev/tty; \
+		if [ -z "$$MY_PASS" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
+		echo "$$MY_PASS" > data/flnd/wallet-password.txt; \
 		chmod 600 data/flnd/wallet-password.txt; \
 		if [ -f "data/flnd/flnd.conf" ]; then \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
