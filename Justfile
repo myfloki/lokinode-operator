@@ -54,7 +54,6 @@ unlock:
 		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
 		exit 1; \
 	fi; \
-	echo "🔍 Checking wallet state..."; \
 	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo ""); \
 	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE"; then \
 		echo "✅ Wallet is already unlocked."; \
@@ -62,9 +61,19 @@ unlock:
 	fi; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
-		read -s -p "Enter wallet password to enable auto-unlock: " password; echo; \
-		if [ -z "$$password" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
-		echo "$$password" > data/flnd/wallet-password.txt; \
+		echo "💡 Your terminal environment may be injecting noisy timestamps."; \
+		echo "💡 We will ask you to enter the password twice to ensure it is captured correctly."; \
+		read -t 0.1 -n 10000 discard || true; \
+		read -s -p "Enter wallet password: " pass1; echo; \
+		read -s -p "Confirm wallet password: " pass2; echo; \
+		if [ "$$pass1" != "$$pass2" ]; then \
+			echo "❌ Passwords do not match!"; \
+			echo "💡 Hint: This is likely due to injected timestamps (e.g., $$(echo "$$pass1" | grep -oE '^[0-9]+' || echo 'none'))."; \
+			echo "💡 Try typing slowly, or create 'data/flnd/wallet-password.txt' manually."; \
+			exit 1; \
+		fi; \
+		if [ -z "$$pass1" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
+		echo "$$pass1" > data/flnd/wallet-password.txt; \
 		chmod 600 data/flnd/wallet-password.txt; \
 		if [ -f "data/flnd/flnd.conf" ]; then \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
@@ -74,7 +83,6 @@ unlock:
 			fi; \
 			echo "✅ Password saved and flnd.conf updated. Restarting flnd to apply..."; \
 			{{DOCKER_COMPOSE}} restart flnd; \
-			echo "⏳ Waiting for flnd to start and auto-unlock..."; \
 		else \
 			echo "⚠️  data/flnd/flnd.conf not found. Manual intervention required."; \
 		fi; \
@@ -82,7 +90,6 @@ unlock:
 		if grep -qE "^[[:space:]]*wallet-unlock-password-file=/root/.flnd/wallet-password.txt" data/flnd/flnd.conf 2>/dev/null; then \
 			echo "🔐 Auto-unlock is configured but wallet is still locked."; \
 			echo "💡 This usually means the password in data/flnd/wallet-password.txt is incorrect."; \
-			echo "💡 Or flnd is still starting up. Try waiting a few seconds or check logs: just logs-flnd"; \
 		else \
 			echo "🔄 Auto-unlock file exists but config is missing. Updating flnd.conf and restarting..."; \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
