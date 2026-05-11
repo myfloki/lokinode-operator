@@ -62,13 +62,14 @@ unlock:
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
 		echo "🔍 Capturing password (any injected timestamps will be stripped)..."; \
-		python3 -c 'import getpass, os, sys, termios, re; \
-try: termios.tcflush(sys.stdin, termios.TCIFLUSH) \
-except: pass \
-p = getpass.getpass("Enter wallet password: "); \
-clean_p = re.sub(r"^[0-9]+", "", p); \
-f = open("data/flnd/wallet-password.txt", "w"); f.write(clean_p); f.close(); \
-os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
+		python3 -c 'import getpass, os, sys, re; \
+		try: \
+			import termios; termios.tcflush(sys.stdin, termios.TCIFLUSH); \
+		except: pass; \
+		p = getpass.getpass("Enter wallet password: "); \
+		clean_p = re.sub(r"^[0-9]+", "", p); \
+		f = open("data/flnd/wallet-password.txt", "w"); f.write(clean_p); f.close(); \
+		os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
 		if [ ! -f "data/flnd/wallet-password.txt" ] || [ ! -s "data/flnd/wallet-password.txt" ]; then \
 			echo "❌ Password entry failed or was empty."; rm -f data/flnd/wallet-password.txt; exit 1; \
 		fi; \
