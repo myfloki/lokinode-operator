@@ -48,7 +48,7 @@ setup-wallet:
 		docker stop flnd-setup > /dev/null && docker rm flnd-setup > /dev/null; \
 	fi
 
-# Unlock the FLND wallet
+# Ensure the FLND wallet is unlocked (sets up auto-unlock if needed)
 unlock:
 	@if [ "$(docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' flnd 2>/dev/null)" != "true" ]; then \
 		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
@@ -60,33 +60,38 @@ unlock:
 		echo "✅ Wallet is already unlocked."; \
 		exit 0; \
 	fi; \
-	read -s -p "Enter wallet password: " password; echo; \
-	if [ -z "$$password" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
-	TMP_OUT="data/flnd/unlock.tmp"; \
-	echo "$$password" | docker exec -i flnd flncli --network=mainnet unlock --stdin > "$$TMP_OUT" 2>&1; \
-	if grep -iqE "unlocked|already" "$$TMP_OUT"; then \
-		echo "✅ Wallet unlocked successfully!"; \
-		if [ ! -f "data/flnd/wallet-password.txt" ]; then \
-			read -p "Do you want to save this password for automatic unlocking next time? (y/n): " save; \
-			if [ "$$save" = "y" ]; then \
-				echo "$$password" > data/flnd/wallet-password.txt; \
-				chmod 600 data/flnd/wallet-password.txt; \
-				if [ -f "data/flnd/flnd.conf" ]; then \
-					if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
-						sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
-					else \
-						echo "wallet-unlock-password-file=/root/.flnd/wallet-password.txt" >> data/flnd/flnd.conf; \
-					fi; \
-					echo "✅ Password saved and flnd.conf updated."; \
-				fi; \
+	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
+		echo "🔐 Auto-unlock is not configured."; \
+		read -s -p "Enter wallet password to enable auto-unlock: " password; echo; \
+		if [ -z "$$password" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
+		echo "$$password" > data/flnd/wallet-password.txt; \
+		chmod 600 data/flnd/wallet-password.txt; \
+		if [ -f "data/flnd/flnd.conf" ]; then \
+			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
+				sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
+			else \
+				echo "wallet-unlock-password-file=/root/.flnd/wallet-password.txt" >> data/flnd/flnd.conf; \
 			fi; \
+			echo "✅ Password saved and flnd.conf updated. Restarting flnd to apply..."; \
+			{{DOCKER_COMPOSE}} restart flnd; \
+			echo "⏳ Waiting for flnd to start and auto-unlock..."; \
+		else \
+			echo "⚠️  data/flnd/flnd.conf not found. Manual intervention required."; \
 		fi; \
-		rm -f "$$TMP_OUT"; \
 	else \
-		echo "❌ Unlock failed. Raw output:"; \
-		cat "$$TMP_OUT"; \
-		rm -f "$$TMP_OUT"; \
-		exit 1; \
+		if grep -qE "^[[:space:]]*wallet-unlock-password-file=/root/.flnd/wallet-password.txt" data/flnd/flnd.conf 2>/dev/null; then \
+			echo "🔐 Auto-unlock is configured but wallet is still locked."; \
+			echo "💡 This usually means the password in data/flnd/wallet-password.txt is incorrect."; \
+			echo "💡 Or flnd is still starting up. Try waiting a few seconds or check logs: just logs-flnd"; \
+		else \
+			echo "🔄 Auto-unlock file exists but config is missing. Updating flnd.conf and restarting..."; \
+			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
+				sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
+			else \
+				echo "wallet-unlock-password-file=/root/.flnd/wallet-password.txt" >> data/flnd/flnd.conf; \
+			fi; \
+			{{DOCKER_COMPOSE}} restart flnd; \
+		fi; \
 	fi
 
 # Open a bash shell in the flnd container
