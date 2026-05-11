@@ -54,15 +54,24 @@ unlock:
 		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
 		exit 1; \
 	fi; \
-	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo ""); \
-	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE"; then \
+	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo "FAILED_TO_GET_STATE"); \
+	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE|UNLOCKED"; then \
 		echo "✅ Wallet is already unlocked."; \
 		exit 0; \
 	fi; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
-		python3 -c 'import getpass, os; p = getpass.getpass("Enter wallet password: "); f = open("data/flnd/wallet-password.txt", "w"); f.write(p); f.close(); os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
-		if [ ! -f "data/flnd/wallet-password.txt" ] || [ ! -s "data/flnd/wallet-password.txt" ]; then echo "❌ Password entry failed or was empty."; rm -f data/flnd/wallet-password.txt; exit 1; fi; \
+		echo "🔍 Capturing password (any injected timestamps will be stripped)..."; \
+		python3 -c 'import getpass, os, sys, termios, re; \
+try: termios.tcflush(sys.stdin, termios.TCIFLUSH) \
+except: pass \
+p = getpass.getpass("Enter wallet password: "); \
+clean_p = re.sub(r"^[0-9]+", "", p); \
+f = open("data/flnd/wallet-password.txt", "w"); f.write(clean_p); f.close(); \
+os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
+		if [ ! -f "data/flnd/wallet-password.txt" ] || [ ! -s "data/flnd/wallet-password.txt" ]; then \
+			echo "❌ Password entry failed or was empty."; rm -f data/flnd/wallet-password.txt; exit 1; \
+		fi; \
 		if [ -f "data/flnd/flnd.conf" ]; then \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
 				sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
@@ -76,8 +85,9 @@ unlock:
 		fi; \
 	else \
 		if grep -qE "^[[:space:]]*wallet-unlock-password-file=/root/.flnd/wallet-password.txt" data/flnd/flnd.conf 2>/dev/null; then \
-			echo "🔐 Auto-unlock is configured but wallet is still locked."; \
+			echo "🔐 Auto-unlock is configured but wallet is still locked (State: $$RAW_STATE)."; \
 			echo "💡 This usually means the password in data/flnd/wallet-password.txt is incorrect."; \
+			echo "💡 You can delete the file and try again: rm data/flnd/wallet-password.txt && just unlock"; \
 		else \
 			echo "🔄 Auto-unlock file exists but config is missing. Updating flnd.conf and restarting..."; \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
