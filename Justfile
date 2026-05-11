@@ -64,8 +64,10 @@ unlock:
 		echo "💡 Your terminal environment may be injecting noisy timestamps."; \
 		echo "💡 We will ask you to enter the password twice to ensure it is captured correctly."; \
 		read -t 0.1 -n 10000 discard || true; \
-		read -s -p "Enter wallet password: " pass1; echo; \
-		read -s -p "Confirm wallet password: " pass2; echo; \
+		read -s -p "Enter wallet password: " raw1; echo; \
+		read -s -p "Confirm wallet password: " raw2; echo; \
+		pass1=$(echo "$$raw1" | sed 's/^[0-9]\+//'); \
+		pass2=$(echo "$$raw2" | sed 's/^[0-9]\+//'); \
 		if [ "$$pass1" != "$$pass2" ]; then \
 			echo "❌ Passwords do not match!"; \
 			echo "💡 Hint: This is likely due to injected timestamps (e.g., $$(echo "$$pass1" | grep -oE '^[0-9]+' || echo 'none'))."; \
