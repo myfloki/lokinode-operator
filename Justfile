@@ -54,25 +54,27 @@ unlock:
 		echo "❌ Error: flnd container is not running. Try 'just up' first."; \
 		exit 1; \
 	fi; \
-	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>/dev/null || echo "FAILED_TO_GET_STATE"); \
-	if echo "$$RAW_STATE" | grep -iqE "RPC_ACTIVE|SERVER_ACTIVE|UNLOCKED"; then \
+	if docker exec flnd flncli --network=mainnet getinfo &> /dev/null; then \
 		echo "✅ Wallet is already unlocked."; \
 		exit 0; \
 	fi; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
-		echo "🔍 Capturing password (any injected timestamps will be stripped)..."; \
-		python3 -c 'import getpass, os, sys, re; \
-		try: \
-			import termios; termios.tcflush(sys.stdin, termios.TCIFLUSH); \
-		except: pass; \
-		p = getpass.getpass("Enter wallet password: "); \
-		clean_p = re.sub(r"^[0-9]+", "", p); \
-		f = open("data/flnd/wallet-password.txt", "w"); f.write(clean_p); f.close(); \
-		os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
-		if [ ! -f "data/flnd/wallet-password.txt" ] || [ ! -s "data/flnd/wallet-password.txt" ]; then \
-			echo "❌ Password entry failed or was empty."; rm -f data/flnd/wallet-password.txt; exit 1; \
+		echo "💡 Your terminal environment may be injecting noisy timestamps."; \
+		echo "💡 We will ask you to enter the password twice to ensure it is captured correctly."; \
+		read -t 0.1 -n 10000 discard || true; \
+		read -s -p "Enter wallet password: " raw1; echo; \
+		read -s -p "Confirm wallet password: " raw2; echo; \
+		pass1=$(echo "$$raw1" | sed 's/^[0-9]\+//'); \
+		pass2=$(echo "$$raw2" | sed 's/^[0-9]\+//'); \
+		if [ "$$pass1" != "$$pass2" ]; then \
+			echo "❌ Passwords do not match!"; \
+			echo "💡 Hint: Try typing slowly, or create 'data/flnd/wallet-password.txt' manually."; \
+			exit 1; \
 		fi; \
+		if [ -z "$$pass1" ]; then echo "❌ Password cannot be empty."; exit 1; fi; \
+		echo "$$pass1" > data/flnd/wallet-password.txt; \
+		chmod 600 data/flnd/wallet-password.txt; \
 		if [ -f "data/flnd/flnd.conf" ]; then \
 			if grep -q "wallet-unlock-password-file" data/flnd/flnd.conf; then \
 				sed -i "s|^[[:space:];]*wallet-unlock-password-file=.*|wallet-unlock-password-file=/root/.flnd/wallet-password.txt|" data/flnd/flnd.conf; \
@@ -86,7 +88,7 @@ unlock:
 		fi; \
 	else \
 		if grep -qE "^[[:space:]]*wallet-unlock-password-file=/root/.flnd/wallet-password.txt" data/flnd/flnd.conf 2>/dev/null; then \
-			echo "🔐 Auto-unlock is configured but wallet is still locked (State: $$RAW_STATE)."; \
+			echo "🔐 Auto-unlock is configured but wallet is still locked."; \
 			echo "💡 This usually means the password in data/flnd/wallet-password.txt is incorrect."; \
 			echo "💡 You can delete the file and try again: rm data/flnd/wallet-password.txt && just unlock"; \
 		else \
