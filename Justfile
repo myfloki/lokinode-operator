@@ -55,15 +55,14 @@ unlock:
 		exit 1; \
 	fi; \
 	echo "🔍 Detecting wallet state..."; \
-	if docker exec flnd flncli --network=mainnet getinfo &> /dev/null; then \
+	TMP_STATE="data/flnd/state.tmp"; \
+	docker exec flnd flncli --network=mainnet state > "$$TMP_STATE" 2>&1 || echo "OFFLINE" > "$$TMP_STATE"; \
+	if grep -iqE "ACTIVE|UNLOCKED" "$$TMP_STATE" || docker exec flnd flncli --network=mainnet getinfo &> /dev/null; then \
 		echo "✅ Wallet is already unlocked."; \
+		rm -f "$$TMP_STATE"; \
 		exit 0; \
 	fi; \
-	RAW_STATE=$(docker exec flnd flncli --network=mainnet state 2>&1 || echo "OFFLINE"); \
-	if echo "$$RAW_STATE" | grep -iqE "ACTIVE|UNLOCKED"; then \
-		echo "✅ Wallet is already unlocked."; \
-		exit 0; \
-	fi; \
+	rm -f "$$TMP_STATE"; \
 	if [ ! -f "data/flnd/wallet-password.txt" ]; then \
 		echo "🔐 Auto-unlock is not configured."; \
 		python3 -c 'import getpass, os; p = getpass.getpass("Enter wallet password: "); f = open("data/flnd/wallet-password.txt", "w"); f.write(p); f.close(); os.chmod("data/flnd/wallet-password.txt", 0o600)' 2>/dev/null; \
